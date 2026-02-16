@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stdio.h"
+#include "stm32l4xx_hal_uart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -52,7 +53,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-#define PUTCHAR_PROTOTYPE int __io_putchar_(int ch)
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -91,13 +92,18 @@ int main(void) {
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t dummy;
+  while (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_RXNE) != RESET) {
+    HAL_UART_Receive(&huart2, &dummy, 1, 10);
+    HAL_Delay(100);
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
     printf("Hello World\n\r");
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     HAL_Delay(1000);
     /* USER CODE END WHILE */
 
