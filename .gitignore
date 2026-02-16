@@ -1,0 +1,50 @@
+# Build artifacts
+build/
+Debug/
+Release/
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+*.srec
+*.axf
+*.o
+*.d
+*.su
+
+# CubeMX / STM32Cube generated temporary / cache files
+*.ioc.bak
+*.ioc~
+STM32CubeMX.lnl
+STM32CubeMX.prj
+STM32CubeMX.xml
+STM32CubeMX.cfg
+.ioc_cache/
+STM32CubeMX.ioc.tmp
+
+# IDE / editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OpenOCD / debug logs
+openocd.cfg
+openocd.log
+gdb.txt
+
+# Backup / temporary files
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+compile_commands.json   
+
