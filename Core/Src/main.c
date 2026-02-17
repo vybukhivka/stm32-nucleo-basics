@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stdio.h"
-#include "stm32l4xx_hal_uart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -247,7 +246,6 @@ PUTCHAR_PROTOTYPE {
  * @brief  This function is executed in case of error occurrence.
  * @retval None
  */
-;
 void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
