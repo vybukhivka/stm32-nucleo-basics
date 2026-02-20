@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stdio.h"
+#include "stm32l4xx_ll_usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,7 +58,17 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int _write(int file, char *ptr, int len) {
+  for (int i = 0; i < len; i++) {
+    while (!LL_USART_IsActiveFlag_TXE(USART2))
+      ;
+    LL_USART_TransmitData8(USART2, ptr[i]);
+  }
 
+  while (!LL_USART_IsActiveFlag_TC(USART2))
+    ;
+  return len;
+}
 /* USER CODE END 0 */
 
 /**
@@ -91,11 +102,6 @@ int main(void) {
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t dummy;
-  while (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_RXNE) != RESET) {
-    HAL_UART_Receive(&huart2, &dummy, 1, 10);
-    HAL_Delay(100);
-  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
