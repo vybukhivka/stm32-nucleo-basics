@@ -58,17 +58,43 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int _write(int file, char *ptr, int len) {
-  for (int i = 0; i < len; i++) {
-    while (!LL_USART_IsActiveFlag_TXE(USART2))
-      ;
-    LL_USART_TransmitData8(USART2, ptr[i]);
+uint8_t *tx_buf = 0;
+volatile uint16_t tx_len;
+volatile uint16_t tx_index;
+volatile int tx_done = 0;
+
+void UART_Send_IT(uint8_t *buf, uint16_t len) {
+  tx_buf = buf;
+  tx_len = len;
+  tx_index = 0;
+  tx_done = 0;
+
+  LL_USART_ClearFlag_TC(USART2);
+  LL_USART_EnableIT_TXE(USART2);
+}
+
+void USART2_Handler(void) {
+  if (LL_USART_IsActiveFlag_TXE(USART2) && LL_USART_IsEnabledIT_TXE(USART2)) {
+    if (tx_index < tx_len) {
+      LL_USART_TransmitData8(USART2, tx_buf[tx_index++]);
+
+      if (tx_index == tx_len) {
+        LL_USART_DisableIT_TXE(USART2);
+        LL_USART_EnableIT_TC(USART2);
+      }
+    }
   }
 
-  while (!LL_USART_IsActiveFlag_TC(USART2))
-    ;
-  return len;
+  if (LL_USART_IsActiveFlag_TC(USART2) && LL_USART_IsEnabledIT_TC(USART2)) {
+    LL_USART_ClearFlag_TC(USART2);
+    LL_USART_DisableIT_TC(USART2);
+    tx_done = 1;
+  }
 }
+
+int count = 0;
+uint8_t buffer[64];
+
 /* USER CODE END 0 */
 
 /**
@@ -107,6 +133,9 @@ int main(void) {
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    int len = sprintf((char *)buffer, "Hello %d\r\n", count++);
+    UART_Send_IT(buffer, len);
+
     printf("Hello World\n\r");
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     HAL_Delay(1000);
