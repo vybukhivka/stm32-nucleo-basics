@@ -44,6 +44,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -52,6 +53,7 @@ UART_HandleTypeDef huart2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
@@ -59,11 +61,12 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t *tx_buf = 0;
-volatile uint16_t tx_len;
-volatile uint16_t tx_index;
+// uint8_t *tx_buf = 0;
+// volatile uint16_t tx_len;
+// volatile uint16_t tx_index;
 volatile int tx_done = 0;
 
+/*
 void UART_Send_IT(uint8_t *buf, uint16_t len) {
   tx_buf = buf;
   tx_len = len;
@@ -89,6 +92,33 @@ void USART2_IRQHandler(void) {
   if (LL_USART_IsActiveFlag_TC(USART2) && LL_USART_IsEnabledIT_TC(USART2)) {
     LL_USART_ClearFlag_TC(USART2);
     LL_USART_DisableIT_TC(USART2);
+    tx_done = 1;
+  }
+}
+*/
+
+void UART_Send_DMA(uint8_t *buf, uint16_t len) {
+  tx_done = 0;
+
+  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_7);
+  LL_DMA_SetPeriphAddress(
+      DMA1, LL_DMA_CHANNEL_7,
+      LL_USART_DMA_GetRegAddr(USART2, LL_USART_DMA_REG_DATA_TRANSMIT));
+  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_7, (uint32_t)buf);
+  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_7, len);
+
+  LL_USART_ClearFlag_TC(USART2);
+  LL_USART_EnableDMAReq_TX(USART2);
+
+  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_7);
+  LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_7);
+}
+
+void USART_DMA_IRQHandler(void) {
+  if (LL_DMA_IsActiveFlag_TC7(DMA1)) {
+    LL_DMA_ClearFlag_TC6(DMA1);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_7);
+
     tx_done = 1;
   }
 }
@@ -127,6 +157,7 @@ int main(void) {
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
@@ -135,9 +166,7 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
   while (1) {
     int len = sprintf((char *)buffer, "Hello %d\r\n", count++);
-    UART_Send_IT(buffer, len);
-    while (tx_done == 0)
-      ;
+    UART_Send_DMA(buffer, len);
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
@@ -221,6 +250,20 @@ static void MX_USART2_UART_Init(void) {
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+}
+
+/**
+ * Enable DMA controller clock
+ */
+static void MX_DMA_Init(void) {
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 }
 
 /**
