@@ -74,7 +74,7 @@ void UART_Send_IT(uint8_t *buf, uint16_t len) {
   LL_USART_EnableIT_TXE(USART2);
 }
 
-void USART2_Handler(void) {
+void USART2_IRQHandler(void) {
   if (LL_USART_IsActiveFlag_TXE(USART2) && LL_USART_IsEnabledIT_TXE(USART2)) {
     if (tx_index < tx_len) {
       LL_USART_TransmitData8(USART2, tx_buf[tx_index++]);
@@ -136,6 +136,8 @@ int main(void) {
   while (1) {
     int len = sprintf((char *)buffer, "Hello %d\r\n", count++);
     UART_Send_IT(buffer, len);
+    while (tx_done == 0)
+      ;
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
