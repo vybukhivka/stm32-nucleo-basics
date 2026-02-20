@@ -20,6 +20,7 @@
 #include "main.h"
 #include "stdio.h"
 #include "stm32l4xx_ll_usart.h"
+#include "stm32l4xx_ll_utils.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -135,10 +136,7 @@ int main(void) {
   while (1) {
     int len = sprintf((char *)buffer, "Hello %d\r\n", count++);
     UART_Send_IT(buffer, len);
-
-    printf("Hello World\n\r");
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-    HAL_Delay(1000);
+    LL_mDelay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
