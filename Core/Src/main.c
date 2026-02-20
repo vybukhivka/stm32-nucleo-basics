@@ -114,7 +114,7 @@ void UART_Send_DMA(uint8_t *buf, uint16_t len) {
   LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_7);
 }
 
-void USART_DMA_IRQHandler(void) {
+void DMA1_Channel7_IRQHandler(void) {
   if (LL_DMA_IsActiveFlag_TC7(DMA1)) {
     LL_DMA_ClearFlag_TC6(DMA1);
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_7);
@@ -167,6 +167,9 @@ int main(void) {
   while (1) {
     int len = sprintf((char *)buffer, "Hello %d\r\n", count++);
     UART_Send_DMA(buffer, len);
+    while (!tx_done)
+      ;
+    tx_done = 0;
     LL_mDelay(1000);
     /* USER CODE END WHILE */
 
