@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l4xx_it.h"
 #include "main.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -57,6 +58,7 @@
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart2_tx;
 extern UART_HandleTypeDef huart2;
+extern volatile int tx_done;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -188,16 +190,20 @@ void SysTick_Handler(void) {
 /**
  * @brief This function handles DMA1 channel7 global interrupt.
  */
-// void DMA1_Channel7_IRQHandler(void)
-// {
-/* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
+void DMA1_Channel7_IRQHandler(void) {
+  /* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
+  if (LL_DMA_IsActiveFlag_TC7(DMA1)) {
+    LL_DMA_ClearFlag_TC6(DMA1);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_7);
 
-/* USER CODE END DMA1_Channel7_IRQn 0 */
-// HAL_DMA_IRQHandler(&hdma_usart2_tx);
-/* USER CODE BEGIN DMA1_Channel7_IRQn 1 */
+    tx_done = 1;
+  }
+  /* USER CODE END DMA1_Channel7_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart2_tx);
+  /* USER CODE BEGIN DMA1_Channel7_IRQn 1 */
 
-/* USER CODE END DMA1_Channel7_IRQn 1 */
-// }
+  /* USER CODE END DMA1_Channel7_IRQn 1 */
+}
 
 /**
  * @brief This function handles USART2 global interrupt.

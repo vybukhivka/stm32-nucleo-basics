@@ -61,41 +61,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// uint8_t *tx_buf = 0;
-// volatile uint16_t tx_len;
-// volatile uint16_t tx_index;
 volatile int tx_done = 0;
-
-/*
-void UART_Send_IT(uint8_t *buf, uint16_t len) {
-  tx_buf = buf;
-  tx_len = len;
-  tx_index = 0;
-  tx_done = 0;
-
-  LL_USART_ClearFlag_TC(USART2);
-  LL_USART_EnableIT_TXE(USART2);
-}
-
-void USART2_IRQHandler(void) {
-  if (LL_USART_IsActiveFlag_TXE(USART2) && LL_USART_IsEnabledIT_TXE(USART2)) {
-    if (tx_index < tx_len) {
-      LL_USART_TransmitData8(USART2, tx_buf[tx_index++]);
-
-      if (tx_index == tx_len) {
-        LL_USART_DisableIT_TXE(USART2);
-        LL_USART_EnableIT_TC(USART2);
-      }
-    }
-  }
-
-  if (LL_USART_IsActiveFlag_TC(USART2) && LL_USART_IsEnabledIT_TC(USART2)) {
-    LL_USART_ClearFlag_TC(USART2);
-    LL_USART_DisableIT_TC(USART2);
-    tx_done = 1;
-  }
-}
-*/
 
 void UART_Send_DMA(uint8_t *buf, uint16_t len) {
   tx_done = 0;
@@ -112,15 +78,6 @@ void UART_Send_DMA(uint8_t *buf, uint16_t len) {
 
   LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_7);
   LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_7);
-}
-
-void DMA1_Channel7_IRQHandler(void) {
-  if (LL_DMA_IsActiveFlag_TC7(DMA1)) {
-    LL_DMA_ClearFlag_TC6(DMA1);
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_7);
-
-    tx_done = 1;
-  }
 }
 
 int count = 0;
